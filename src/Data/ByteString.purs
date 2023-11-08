@@ -25,6 +25,8 @@ instance Show ByteString where
 
 -- type Result2 = { head :: CodePoint, tail :: ByteString }
 
+-- size is actually constant time, so this is here just for
+-- the benchmarks
 size :: ByteString -> Int
 size s = go 0 s
   where
