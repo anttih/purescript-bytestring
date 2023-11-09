@@ -2,6 +2,7 @@
 (library (Data.ByteString foreign)
   (export bytestring-ref
           bytestring-codepoint-ref
+          bytestring-length
           unconsCodeUnitImpl
           unconsCodePointImpl
           fromString
