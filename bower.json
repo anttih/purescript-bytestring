@@ -1,0 +1,9 @@
+{
+  "name": "purescript-bytestring",
+  "homepage": "https://github.com/anttih/purescript-bytestring",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anttih/purescript-bytestring.git"
+  }
+}
