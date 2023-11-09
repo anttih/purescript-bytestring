@@ -1,6 +1,8 @@
 #!chezscheme
 (library (Data.ByteString foreign)
-  (export unconsCodeUnitImpl
+  (export bytestring-ref
+          bytestring-codepoint-ref
+          unconsCodeUnitImpl
           unconsCodePointImpl
           fromString
           showByteString
