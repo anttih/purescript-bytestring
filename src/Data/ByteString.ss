@@ -10,8 +10,15 @@
   (import (chezscheme)
           (prefix (purs runtime lib) rt:))
 
+  ;; Immutable UTF-8 encoded slice into a bytevector buffer
   (define-structure
-    (bytestring buffer offset length))
+    (bytestring
+      ;; the UTF-8 encoded bytevector
+      buffer
+      ;; start offset of the slice
+      offset
+      ;; size of the slice in bytes (code units)
+      length))
 
   (define (bytestring-empty? bs)
     (fx=? (bytestring-length bs) 0))
