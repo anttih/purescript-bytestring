@@ -6,9 +6,11 @@
           bytestring-length
           string->bytestring
           bytestring?
+          bytestring=?
 
           (rename (bytestring-length length))
           (rename (string->bytestring fromString))
+          (rename (bytestring=? eqImpl))
           unconsCodeUnitImpl
           unconsCodePointImpl
           showByteString
@@ -28,6 +30,29 @@
 
   (define (bytestring-empty? bs)
     (fx=? (bytestring-length bs) 0))
+
+  ;; Assumes the buffers have the same length
+  (define (bytestring-equal-code-units? x y)
+    (let loop ([n 0] [tailx x] [taily y])
+      (let-values ([(hx tx) (bytestring-uncons-code-unit tailx)]
+                   [(hy ty) (bytestring-uncons-code-unit taily)])
+        (assert hx)
+        (assert hy)
+        (if (bytestring-empty? tx)
+          #t
+          (if (fx=? hx hy)
+            (loop (fx1+ n) tx ty)
+            #f)))))
+
+  (define (bytestring=? x y)
+    (if (and (fx=? (bytestring-offset x) (bytestring-offset y))
+             (fx=? (bytestring-length x) (bytestring-length y)))
+      (cond
+        ;; Do they point to the same object in memory?
+        [(eq? (bytestring-buffer x) (bytestring-buffer y)) #t]
+        [(bytestring-equal-code-units? x y) #t]
+        [else #f])
+      #f))
 
   (define (string->bytestring s)
     (let ([bv (string->utf8 s)])

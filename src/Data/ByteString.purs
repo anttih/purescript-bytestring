@@ -12,7 +12,7 @@ module Data.ByteString
 
 import Prelude
 
-import Data.Function.Uncurried (Fn3, Fn4, runFn3, runFn4)
+import Data.Function.Uncurried (Fn2, Fn3, Fn4, runFn2, runFn3, runFn4)
 import Data.Maybe (Maybe(..))
 
 newtype CodePoint = CodePoint Int
@@ -31,6 +31,9 @@ foreign import data ByteString :: Type
 instance Show ByteString where
   show = showByteString
 
+instance Eq ByteString where
+  eq x y = runFn2 eqImpl x y
+
 lengthCodePoints :: ByteString -> Int
 lengthCodePoints s = go 0 s
   where
@@ -43,6 +46,8 @@ foreign import fromString :: String -> ByteString
 foreign import length :: ByteString -> Int
 
 foreign import showByteString :: ByteString -> String
+
+foreign import eqImpl :: Fn2 ByteString ByteString Boolean
 
 foreign import unconsCodeUnitImpl
   :: Fn3

@@ -35,6 +35,15 @@ main = do
   assertEqual { actual: BS.codePointAt 1 (BS.fromString "ää"), expected: Just (CodePoint 228) }
   assertEqual { actual: BS.codePointAt 0 (BS.fromString "aä"), expected: Just (CodePoint 97) }
 
+  let s = BS.fromString "🅐𝚕𝗂c̤𝘦 ｗä̤𝒔 𝒷ɘg̤̈⒤𝔫ⓝ𝒊n𝕘"
+
+  assert $ BS.fromString "" == BS.fromString ""
+  assert $ BS.fromString "a" == BS.fromString "a"
+  assert $ BS.fromString "aa" /= BS.fromString "a"
+  assert $ BS.fromString "ää" /= BS.fromString "ä"
+  assert $ s == s
+
+
 assertUnconsCodeUnit :: ByteString -> CodeUnit -> Effect Unit
 assertUnconsCodeUnit bs c =
   case BS.unconsCodeUnit bs of
