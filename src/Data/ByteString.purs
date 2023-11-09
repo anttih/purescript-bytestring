@@ -5,8 +5,8 @@ module Data.ByteString
   , unconsCodeUnit
   , unconsCodePoint
   , fromString
-  , size
   , length
+  , lengthCodePoints
   , codePointAt
   ) where
 
@@ -31,25 +31,16 @@ foreign import data ByteString :: Type
 instance Show ByteString where
   show = showByteString
 
--- type Result2 = { head :: CodePoint, tail :: ByteString }
-
--- size is actually constant time, so this is here just for
--- the benchmarks
-size :: ByteString -> Int
-size s = go 0 s
-  where
-  go count tail' = case unconsCodeUnit tail' of
-    Nothing -> count
-    Just { tail } -> go (count + 1) tail
-
-length :: ByteString -> Int
-length s = go 0 s
+lengthCodePoints :: ByteString -> Int
+lengthCodePoints s = go 0 s
   where
   go count tail' = case unconsCodePoint tail' of
     Nothing -> count
     Just { tail } -> go (count + 1) tail
 
 foreign import fromString :: String -> ByteString
+
+foreign import length :: ByteString -> Int
 
 foreign import showByteString :: ByteString -> String
 

@@ -42,6 +42,13 @@ main = do
       Nothing -> count
       Just { tail } -> go (count + 1) tail
 
+  size :: ByteString -> Int
+  size s = go 0 s
+    where
+    go count tail' = case BS.unconsCodeUnit tail' of
+      Nothing -> count
+      Just { tail } -> go (count + 1) tail
+
   benchNativeString :: String -> Effect Unit
   benchNativeString input = do
     log "---"
@@ -58,7 +65,7 @@ main = do
   benchCodeUnits input = do
     log "---"
     log "uncons ByteString code unit"
-    benchWith 100 \_ -> BS.size input
+    benchWith 100 \_ -> size input
 
   benchCodePoints :: ByteString -> Effect Unit
   benchCodePoints input = do

@@ -5,10 +5,12 @@
           bytestring-ref-code-unit
           bytestring-length
           string->bytestring
+          bytestring?
 
+          (rename (bytestring-length length))
+          (rename (string->bytestring fromString))
           unconsCodeUnitImpl
           unconsCodePointImpl
-          fromString
           showByteString
           codePointAtImpl)
   (import (chezscheme)
@@ -117,16 +119,10 @@
         (integer->char unit)
         (integer->char 65533))))
 
-  ;; TODO
-  ;; string-append
-  ;; string->number
-  ;; substring
 
   ;; ------------------------------------------------------------ 
   ;; PureScript FFI
   ;; ------------------------------------------------------------
-
-  (define fromString string->bytestring)
 
   (define showByteString
     (lambda (bs)
