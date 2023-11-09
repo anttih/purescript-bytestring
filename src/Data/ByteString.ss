@@ -4,6 +4,8 @@
           bytestring-ref-code-point
           bytestring-ref-code-unit
           bytestring-length
+          string->bytestring
+
           unconsCodeUnitImpl
           unconsCodePointImpl
           fromString
@@ -24,6 +26,10 @@
 
   (define (bytestring-empty? bs)
     (fx=? (bytestring-length bs) 0))
+
+  (define (string->bytestring s)
+    (let ([bv (string->utf8 s)])
+      (make-bytestring bv 0 (bytevector-length bv))))
 
   (define (bytestring-read-byte bs)
     (bytevector-s8-ref (bytestring-buffer bs) (bytestring-offset bs)))
@@ -120,10 +126,7 @@
   ;; PureScript FFI
   ;; ------------------------------------------------------------
 
-  (define fromString
-    (lambda (s)
-      (let ([buffer (string->utf8 s)])
-        (make-bytestring buffer 0 (bytevector-length buffer)))))
+  (define fromString string->bytestring)
 
   (define showByteString
     (lambda (bs)
