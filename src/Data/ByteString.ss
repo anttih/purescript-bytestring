@@ -96,7 +96,7 @@
       (let* ([buf (bytestring-buffer bs)]
              [b1 (bytevector-s8-ref buf (bytestring-offset bs))])
         (cond
-          [(fx=? #16rf0 (logand #16rf8 b1))
+          [(fx=? #xf0 (logand #xf8 b1))
            (if (fx>= (bytestring-length bs) 4)
              (let* ([b2 (bytevector-s8-ref buf (fx+ (bytestring-offset bs) 1))]
                     [b3 (bytevector-s8-ref buf (fx+ (bytestring-offset bs) 2))]
@@ -108,7 +108,7 @@
                     [tail (bytestring-forward bs 4)])
                (values head tail))
              (values #f '()))]
-          [(fx=? #16re0 (logand #16rf0 b1))
+          [(fx=? #xe0 (logand #xf0 b1))
            (if (fx>= (bytestring-length bs) 3)
              (let* ([b2 (bytevector-s8-ref buf (fx+ (bytestring-offset bs) 1))]
                     [b3 (bytevector-s8-ref buf (fx+ (bytestring-offset bs) 2))]
@@ -118,7 +118,7 @@
                     [tail (bytestring-forward bs 3)])
                (values head tail))
              (values #f '()))]
-          [(fx=? #16rc0 (logand #16re0 b1))
+          [(fx=? #xc0 (logand #xe0 b1))
            (if (fx>= (bytestring-length bs) 2)
              (let* ([b2 (bytevector-s8-ref buf (fx+ (bytestring-offset bs) 1))]
                     [head (fxlogor (fxsll (fxlogand b1 #b11111) 6) (fxlogand b2 #b111111))]
