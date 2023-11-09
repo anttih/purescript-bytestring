@@ -3,7 +3,6 @@ module Test.Main where
 import Prelude
 
 import Effect (Effect)
-import Effect.Class.Console (log)
 import Test.Assert (assert, assertEqual)
 import Data.Maybe (Maybe(..))
 import Data.ByteString (ByteString, CodeUnit(..), CodePoint(..))
@@ -29,6 +28,12 @@ main = do
 
   assertEqual { actual: BS.length (BS.fromString "🅐𝚕𝗂c̤𝘦 ｗä̤𝒔 𝒷ɘg̤̈⒤𝔫ⓝ𝒊n𝕘"), expected: 24 }
   assertEqual { actual: BS.size (BS.fromString "🅐𝚕𝗂c̤𝘦 ｗä̤𝒔 𝒷ɘg̤̈⒤𝔫ⓝ𝒊n𝕘"), expected: 63 }
+
+  assertEqual { actual: BS.codePointAt (-1) (BS.fromString "a"), expected: Nothing }
+  assertEqual { actual: BS.codePointAt 0 (BS.fromString ""), expected: Nothing }
+  assertEqual { actual: BS.codePointAt 10 (BS.fromString "ää"), expected: Nothing }
+  assertEqual { actual: BS.codePointAt 1 (BS.fromString "ää"), expected: Just (CodePoint 228) }
+  assertEqual { actual: BS.codePointAt 0 (BS.fromString "aä"), expected: Just (CodePoint 97) }
 
 assertUnconsCodeUnit :: ByteString -> CodeUnit -> Effect Unit
 assertUnconsCodeUnit bs c =

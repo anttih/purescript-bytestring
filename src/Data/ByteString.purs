@@ -1,11 +1,19 @@
 module Data.ByteString
-  (ByteString, CodeUnit(..), CodePoint(..), unconsCodeUnit, unconsCodePoint, fromString, size, length)
-  where
+  ( ByteString
+  , CodeUnit(..)
+  , CodePoint(..)
+  , unconsCodeUnit
+  , unconsCodePoint
+  , fromString
+  , size
+  , length
+  , codePointAt
+  ) where
 
 import Prelude
 
+import Data.Function.Uncurried (Fn3, Fn4, runFn3, runFn4)
 import Data.Maybe (Maybe(..))
-import Data.Function.Uncurried (Fn3, runFn3)
 
 newtype CodePoint = CodePoint Int
 
@@ -45,22 +53,33 @@ foreign import fromString :: String -> ByteString
 
 foreign import showByteString :: ByteString -> String
 
-foreign import unconsCodeUnitImpl ::
-  Fn3
-  ByteString
-  (forall a. a -> Maybe a)
-  (Maybe { head :: CodeUnit, tail :: ByteString })
-  (Maybe { head :: CodeUnit, tail :: ByteString })
+foreign import unconsCodeUnitImpl
+  :: Fn3
+       ByteString
+       (forall a. a -> Maybe a)
+       (Maybe { head :: CodeUnit, tail :: ByteString })
+       (Maybe { head :: CodeUnit, tail :: ByteString })
 
 unconsCodeUnit :: ByteString -> Maybe { head :: CodeUnit, tail :: ByteString }
 unconsCodeUnit bs = runFn3 unconsCodeUnitImpl bs Just Nothing
 
-foreign import unconsCodePointImpl ::
-  Fn3
-  ByteString
-  (forall a. a -> Maybe a)
-  (Maybe { head :: CodePoint, tail :: ByteString })
-  (Maybe { head :: CodePoint, tail :: ByteString })
+foreign import unconsCodePointImpl
+  :: Fn3
+       ByteString
+       (forall a. a -> Maybe a)
+       (Maybe { head :: CodePoint, tail :: ByteString })
+       (Maybe { head :: CodePoint, tail :: ByteString })
 
 unconsCodePoint :: ByteString -> Maybe { head :: CodePoint, tail :: ByteString }
 unconsCodePoint bs = runFn3 unconsCodePointImpl bs Just Nothing
+
+codePointAt :: Int -> ByteString -> Maybe CodePoint
+codePointAt n bs = runFn4 codePointAtImpl Just Nothing n bs
+
+foreign import codePointAtImpl
+  :: Fn4
+       (forall a. a -> Maybe a)
+       (Maybe CodePoint)
+       Int
+       ByteString
+       (Maybe CodePoint)

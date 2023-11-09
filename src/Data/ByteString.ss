@@ -3,7 +3,8 @@
   (export unconsCodeUnitImpl
           unconsCodePointImpl
           fromString
-          showByteString)
+          showByteString
+          codePointAtImpl)
   (import (chezscheme)
           (prefix (purs runtime lib) rt:))
 
@@ -27,6 +28,69 @@
       (bytevector-copy! (bytestring-buffer bs) (bytestring-offset bs) buf 0 (bytestring-length bs))
       (utf8->string buf)))
 
+  (define (bytestring-uncons-codepoint bs)
+    (if (bytestring-empty? bs)
+      (values #f '())
+      (let* ([buf (bytestring-buffer bs)]
+             [b1 (bytevector-s8-ref buf (bytestring-offset bs))])
+        (cond
+          [(fx=? #16rf0 (logand #16rf8 b1))
+           (if (fx>= (bytestring-length bs) 4)
+             (let* ([b2 (bytevector-s8-ref buf (fx+ (bytestring-offset bs) 1))]
+                    [b3 (bytevector-s8-ref buf (fx+ (bytestring-offset bs) 2))]
+                    [b4 (bytevector-s8-ref buf (fx+ (bytestring-offset bs) 3))]
+                    [head (fxlogor (fxsll (fxlogand b1 #b111) 16)
+                                  (fxsll (fxlogand b2 #b1111) 12)
+                                  (fxsll (fxlogand b3 #b111111) 6)
+                                  (fxlogand b4 #b111111))]
+                    [tail (bytestring-forward bs 4)])
+               (values head tail))
+             (values #f '()))]
+          [(fx=? #16re0 (logand #16rf0 b1))
+           (if (fx>= (bytestring-length bs) 3)
+             (let* ([b2 (bytevector-s8-ref buf (fx+ (bytestring-offset bs) 1))]
+                    [b3 (bytevector-s8-ref buf (fx+ (bytestring-offset bs) 2))]
+                    [head (fxlogor (fxsll (fxlogand b1 #b1111) 12)
+                                  (fxsll (fxlogand b2 #b111111) 6)
+                                  (fxlogand b3 #b111111))]
+                    [tail (bytestring-forward bs 3)])
+               (values head tail))
+             (values #f '()))]
+          [(fx=? #16rc0 (logand #16re0 b1))
+           (if (fx>= (bytestring-length bs) 2)
+             (let* ([b2 (bytevector-s8-ref buf (fx+ (bytestring-offset bs) 1))]
+                    [head (fxlogor (fxsll (fxlogand b1 #b11111) 6) (fxlogand b2 #b111111))]
+                    [tail (bytestring-forward bs 2)])
+                (values head tail))
+             (values #f '()))]
+          [else
+            (let ([head b1]
+                  [tail (bytestring-forward bs 1)])
+              (values  head tail))]))))
+
+  (define (bytestring-codepoint-ref bs n)
+    (let loop ([i 0]
+               [cur bs])
+      (let-values ([(head tail) (bytestring-uncons-codepoint cur)])
+        (if (not head)
+          ;; TODO raise continuable
+          #f
+          (if (fx=? i n)
+            head
+            (loop (fx1+ i) tail))))))
+
+  (define (bytestring-ref bs n)
+    (integer->char (bytestring-codepoint-ref bs n)))
+
+  ;; TODO
+  ;; string-append
+  ;; string->number
+  ;; substring
+
+  ;; ------------------------------------------------------------ 
+  ;; PureScript FFI
+  ;; ------------------------------------------------------------
+
   (define fromString
     (lambda (s)
       (let ([buffer (string->utf8 s)])
@@ -46,44 +110,21 @@
 
   (define unconsCodePointImpl
     (lambda (bs Just Nothing)
-      (if (bytestring-empty? bs)
-        Nothing
-        (let* ([buf (bytestring-buffer bs)]
-               [b1 (bytevector-s8-ref buf (bytestring-offset bs))])
-          (cond
-            [(fx=? #16rf0 (logand #16rf8 b1))
-             (if (fx>= (bytestring-length bs) 4)
-               (let* ([b2 (bytevector-s8-ref buf (fx+ (bytestring-offset bs) 1))]
-                      [b3 (bytevector-s8-ref buf (fx+ (bytestring-offset bs) 2))]
-                      [b4 (bytevector-s8-ref buf (fx+ (bytestring-offset bs) 3))]
-                      [head (fxlogor (fxsll (fxlogand b1 #b111) 16)
-                                    (fxsll (fxlogand b2 #b1111) 12)
-                                    (fxsll (fxlogand b3 #b111111) 6)
-                                    (fxlogand b4 #b111111))]
-                      [tail (bytestring-forward bs 4)])
-                 (Just (rt:make-object (cons "head" head) (cons "tail" tail))))
-               Nothing)]
-            [(fx=? #16re0 (logand #16rf0 b1))
-             (if (fx>= (bytestring-length bs) 3)
-               (let* ([b2 (bytevector-s8-ref buf (fx+ (bytestring-offset bs) 1))]
-                      [b3 (bytevector-s8-ref buf (fx+ (bytestring-offset bs) 2))]
-                      [head (fxlogor (fxsll (fxlogand b1 #b1111) 12)
-                                    (fxsll (fxlogand b2 #b111111) 6)
-                                    (fxlogand b3 #b111111))]
-                      [tail (bytestring-forward bs 3)])
-                 (Just (rt:make-object (cons "head" head) (cons "tail" tail))))
-               Nothing)]
-            [(fx=? #16rc0 (logand #16re0 b1))
-             (if (fx>= (bytestring-length bs) 2)
-               (let* ([b2 (bytevector-s8-ref buf (fx+ (bytestring-offset bs) 1))]
-                      [head (fxlogor (fxsll (fxlogand b1 #b11111) 6) (fxlogand b2 #b111111))]
-                      [tail (bytestring-forward bs 2)])
-                  (Just (rt:make-object (cons "head" head) (cons "tail" tail))))
-               Nothing)]
-            [else
-              (let ([head b1]
-                    [tail (bytestring-forward bs 1)])
-                (Just (rt:make-object (cons "head" head) (cons "tail" tail))))])))))
+      (let-values ([(head tail) (bytestring-uncons-codepoint bs)])
+        (if (not head)
+          Nothing
+          (Just (rt:make-object (cons "head" head) (cons "tail" tail)))))))
+
+  (define codePointAtImpl
+    (lambda (Just Nothing n bs)
+      (let loop ([i 0]
+                 [cur bs])
+        (let-values ([(head tail) (bytestring-uncons-codepoint cur)])
+          (if (not head)
+            Nothing
+            (if (fx=? i n)
+              (Just head)
+              (loop (fx1+ i) tail)))))))
 
   )
 
