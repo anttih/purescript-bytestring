@@ -45,11 +45,11 @@
             #f)))))
 
   (define (bytestring=? x y)
-    (if (and (fx=? (bytestring-offset x) (bytestring-offset y))
-             (fx=? (bytestring-length x) (bytestring-length y)))
+    (if (fx=? (bytestring-length x) (bytestring-length y))
       (cond
         ;; Do they point to the same object in memory?
-        [(eq? (bytestring-buffer x) (bytestring-buffer y)) #t]
+        [(and (fx=? (bytestring-offset x) (bytestring-offset y))
+              (eq? (bytestring-buffer x) (bytestring-buffer y))) #t]
         [(bytestring-equal-code-units? x y) #t]
         [else #f])
       #f))
