@@ -7,6 +7,7 @@
           string->bytestring
           bytestring?
           bytestring=?
+          substring
 
           (rename (bytestring-length length))
           (rename (string->bytestring fromString))
@@ -14,8 +15,9 @@
           unconsCodeUnitImpl
           unconsCodePointImpl
           showByteString
-          codePointAtImpl)
-  (import (chezscheme)
+          codePointAtImpl
+          sliceImpl)
+  (import (except (chezscheme) substring)
           (prefix (purs runtime lib) rt:))
 
   ;; Immutable UTF-8 encoded slice into a bytevector buffer
@@ -145,6 +147,12 @@
         (integer->char 65533))))
 
 
+  (define (substring bs start end)
+    (make-bytestring
+      (bytestring-buffer bs)
+      (fx+ (bytestring-offset bs) start)
+      (fx- end start)))
+
   ;; ------------------------------------------------------------ 
   ;; PureScript FFI
   ;; ------------------------------------------------------------
@@ -179,5 +187,12 @@
               (Just head)
               (loop (fx1+ i) tail)))))))
 
+  (define sliceImpl
+    (lambda (start end bs)
+      (make-bytestring
+        (bytestring-buffer bs)
+        (fx+ (bytestring-offset bs) start)
+        (fx- end start))))
+      
   )
 

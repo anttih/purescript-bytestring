@@ -6,6 +6,7 @@ module Data.ByteString
   , unconsCodePoint
   , fromString
   , length
+  , slice
   , lengthCodePoints
   , codePointAt
   ) where
@@ -48,6 +49,11 @@ foreign import length :: ByteString -> Int
 foreign import showByteString :: ByteString -> String
 
 foreign import eqImpl :: Fn2 ByteString ByteString Boolean
+
+foreign import sliceImpl :: Fn3 Int Int ByteString ByteString
+
+slice :: Int -> Int -> ByteString -> ByteString
+slice start end bs = runFn3 sliceImpl start end bs
 
 foreign import unconsCodeUnitImpl
   :: Fn3

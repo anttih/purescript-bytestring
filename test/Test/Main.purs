@@ -43,6 +43,11 @@ main = do
   assert $ BS.fromString "ää" /= BS.fromString "ä"
   assert $ s == s
 
+  assertEqual { actual: BS.slice 0 1 (BS.fromString "foo bar"), expected: BS.fromString "f" }
+  assertEqual { actual: BS.slice 0 2 (BS.fromString "foo bar"), expected: BS.fromString "fo" }
+  assertEqual { actual: BS.slice 0 3 (BS.fromString "foo bar"), expected: BS.fromString "foo" }
+  assertEqual { actual: BS.slice 0 4 (BS.fromString "foo bar"), expected: BS.fromString "foo " }
+  assertEqual { actual: BS.slice 4 6 (BS.fromString "foo bar"), expected: BS.fromString "ba" }
 
 assertUnconsCodeUnit :: ByteString -> CodeUnit -> Effect Unit
 assertUnconsCodeUnit bs c =
