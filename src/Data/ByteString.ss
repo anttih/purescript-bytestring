@@ -1,7 +1,8 @@
 #!chezscheme
 (library (Data.ByteString foreign)
   (export bytestring-ref
-          bytestring-codepoint-ref
+          bytestring-ref-code-point
+          bytestring-ref-code-unit
           bytestring-length
           unconsCodeUnitImpl
           unconsCodePointImpl
@@ -38,7 +39,23 @@
       (bytevector-copy! (bytestring-buffer bs) (bytestring-offset bs) buf 0 (bytestring-length bs))
       (utf8->string buf)))
 
-  (define (bytestring-uncons-codepoint bs)
+  (define (bytestring-uncons-code-unit bs)
+    (if (bytestring-empty? bs)
+      (values #f '())
+      (let ([head (bytestring-read-byte bs)]
+            [tail (bytestring-forward bs 1)])
+        (values head tail))))
+
+  (define (bytestring-ref-code-unit bs n)
+    (let loop ([i 0]
+               [cur bs])
+      (let-values ([(head tail) (bytestring-uncons-code-unit cur)])
+        (assert head)
+        (if (fx=? i n)
+          head
+          (loop (fx1+ i) tail)))))
+
+  (define (bytestring-uncons-code-point bs)
     (if (bytestring-empty? bs)
       (values #f '())
       (let* ([buf (bytestring-buffer bs)]
@@ -78,19 +95,21 @@
                   [tail (bytestring-forward bs 1)])
               (values  head tail))]))))
 
-  (define (bytestring-codepoint-ref bs n)
+  (define (bytestring-ref-code-point bs n)
     (let loop ([i 0]
                [cur bs])
-      (let-values ([(head tail) (bytestring-uncons-codepoint cur)])
-        (if (not head)
-          ;; TODO raise continuable
-          #f
-          (if (fx=? i n)
-            head
-            (loop (fx1+ i) tail))))))
+      (let-values ([(head tail) (bytestring-uncons-code-point cur)])
+        (assert head)
+        (if (fx=? i n)
+          head
+          (loop (fx1+ i) tail)))))
 
   (define (bytestring-ref bs n)
-    (integer->char (bytestring-codepoint-ref bs n)))
+    (let ([unit (bytestring-ref-code-unit bs n)])
+      ;; coerce the code unit to a char
+      (if (and (fx>= unit 0) (fx<= unit 127))
+        (integer->char unit)
+        (integer->char 65533))))
 
   ;; TODO
   ;; string-append
@@ -120,7 +139,7 @@
 
   (define unconsCodePointImpl
     (lambda (bs Just Nothing)
-      (let-values ([(head tail) (bytestring-uncons-codepoint bs)])
+      (let-values ([(head tail) (bytestring-uncons-code-point bs)])
         (if (not head)
           Nothing
           (Just (rt:make-object (cons "head" head) (cons "tail" tail)))))))
@@ -129,7 +148,7 @@
     (lambda (Just Nothing n bs)
       (let loop ([i 0]
                  [cur bs])
-        (let-values ([(head tail) (bytestring-uncons-codepoint cur)])
+        (let-values ([(head tail) (bytestring-uncons-code-point cur)])
           (if (not head)
             Nothing
             (if (fx=? i n)
