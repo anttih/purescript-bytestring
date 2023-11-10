@@ -35,6 +35,12 @@ instance Show ByteString where
 instance Eq ByteString where
   eq x y = runFn2 eqImpl x y
 
+instance Semigroup ByteString where
+  append x y = runFn2 concatImpl x y
+
+instance Monoid ByteString where
+  mempty = fromString ""
+
 lengthCodePoints :: ByteString -> Int
 lengthCodePoints s = go 0 s
   where
@@ -51,6 +57,8 @@ foreign import showByteString :: ByteString -> String
 foreign import eqImpl :: Fn2 ByteString ByteString Boolean
 
 foreign import sliceImpl :: Fn3 Int Int ByteString ByteString
+
+foreign import concatImpl :: Fn2 ByteString ByteString ByteString
 
 slice :: Int -> Int -> ByteString -> ByteString
 slice start end bs = runFn3 sliceImpl start end bs

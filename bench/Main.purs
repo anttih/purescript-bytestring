@@ -1,13 +1,14 @@
 module Bench.Main where
 
 import Prelude
+
+import Data.ByteString (ByteString, CodePoint)
+import Data.ByteString as BS
+import Data.Function.Uncurried (Fn2, Fn3, runFn2)
+import Data.Maybe (Maybe)
 import Effect (Effect)
 import Effect.Console (log)
 import Performance.Minibench (benchWith)
-import Data.Maybe (Maybe(..))
-import Data.Function.Uncurried (Fn3, runFn3)
-import Data.ByteString (ByteString, CodePoint)
-import Data.ByteString as BS
 
 foreign import unconsCodePointImpl ::
   Fn3
@@ -19,6 +20,8 @@ foreign import unconsCodePointImpl ::
 foreign import readTextFile :: String -> Effect String
 
 foreign import lengthNative :: String -> Int
+
+foreign import stringAppend :: Fn2 String String String
 
 main :: Effect Unit
 main = do
@@ -32,6 +35,9 @@ main = do
 
   benchCodeUnits inputBs inputBsUnicode
   benchCodePoints inputBs inputBsUnicode
+
+  benchConcatNative inputUnicode
+  benchConcat inputBsUnicode
 
   where
   
@@ -64,4 +70,16 @@ main = do
     log "---"
     log "ByteString length (code points) unicode"
     benchWith 100 \_ -> BS.lengthCodePoints unicode
+
+  benchConcatNative :: String -> Effect Unit
+  benchConcatNative unicode = do
+    log "---"
+    log "native string-append (concat)"
+    benchWith 100 \_ -> runFn2 stringAppend unicode unicode
+
+  benchConcat :: ByteString -> Effect Unit
+  benchConcat unicode = do
+    log "---"
+    log "ByteString concat"
+    benchWith 100 \_ -> unicode <> unicode
 

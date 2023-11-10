@@ -8,10 +8,12 @@
           bytestring?
           bytestring=?
           substring
+          bytestring-append
 
           (rename (bytestring-length length))
           (rename (string->bytestring fromString))
           (rename (bytestring=? eqImpl))
+          (rename (bytestring-append concatImpl))
           unconsCodeUnitImpl
           unconsCodePointImpl
           showByteString
@@ -146,12 +148,19 @@
         (integer->char unit)
         (integer->char 65533))))
 
-
   (define (substring bs start end)
     (make-bytestring
       (bytestring-buffer bs)
       (fx+ (bytestring-offset bs) start)
       (fx- end start)))
+
+  (define (bytestring-append x y)
+    (let* ([len (fx+ (bytestring-length x) (bytestring-length y))]
+           [buf (make-bytevector len)])
+      (bytevector-copy! (bytestring-buffer x) (bytestring-offset x) buf 0 (bytestring-length x))
+      (bytevector-copy! (bytestring-buffer y) (bytestring-offset y) buf (bytestring-length x) (bytestring-length y))
+      (make-bytestring buf 0 len)))
+
 
   ;; ------------------------------------------------------------ 
   ;; PureScript FFI

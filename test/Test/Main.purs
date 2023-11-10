@@ -10,6 +10,8 @@ import Data.ByteString as BS
 
 main :: Effect Unit
 main = do
+  let s = BS.fromString "🅐𝚕𝗂c̤𝘦 ｗä̤𝒔 𝒷ɘg̤̈⒤𝔫ⓝ𝒊n𝕘"
+
   assertUnconsCodeUnitFail (BS.fromString "")
   assertUnconsCodeUnit (BS.fromString "foo") (CodeUnit 102)
   assertUnconsCodeUnit (BS.fromString "a") (CodeUnit 97)
@@ -26,16 +28,14 @@ main = do
   assertEqual { actual: BS.lengthCodePoints (BS.fromString "ää"), expected: 2 }
   assertEqual { actual: BS.length (BS.fromString "ää"), expected: 4 }
 
-  assertEqual { actual: BS.lengthCodePoints (BS.fromString "🅐𝚕𝗂c̤𝘦 ｗä̤𝒔 𝒷ɘg̤̈⒤𝔫ⓝ𝒊n𝕘"), expected: 24 }
-  assertEqual { actual: BS.length (BS.fromString "🅐𝚕𝗂c̤𝘦 ｗä̤𝒔 𝒷ɘg̤̈⒤𝔫ⓝ𝒊n𝕘"), expected: 63 }
+  assertEqual { actual: BS.lengthCodePoints s, expected: 24 }
+  assertEqual { actual: BS.length s, expected: 63 }
 
   assertEqual { actual: BS.codePointAt (-1) (BS.fromString "a"), expected: Nothing }
   assertEqual { actual: BS.codePointAt 0 (BS.fromString ""), expected: Nothing }
   assertEqual { actual: BS.codePointAt 10 (BS.fromString "ää"), expected: Nothing }
   assertEqual { actual: BS.codePointAt 1 (BS.fromString "ää"), expected: Just (CodePoint 228) }
   assertEqual { actual: BS.codePointAt 0 (BS.fromString "aä"), expected: Just (CodePoint 97) }
-
-  let s = BS.fromString "🅐𝚕𝗂c̤𝘦 ｗä̤𝒔 𝒷ɘg̤̈⒤𝔫ⓝ𝒊n𝕘"
 
   assert $ BS.fromString "" == BS.fromString ""
   assert $ BS.fromString "a" == BS.fromString "a"
@@ -48,6 +48,12 @@ main = do
   assertEqual { actual: BS.slice 0 3 (BS.fromString "foo bar"), expected: BS.fromString "foo" }
   assertEqual { actual: BS.slice 0 4 (BS.fromString "foo bar"), expected: BS.fromString "foo " }
   assertEqual { actual: BS.slice 4 6 (BS.fromString "foo bar"), expected: BS.fromString "ba" }
+
+  assertEqual { actual: BS.fromString "" <> BS.fromString "", expected: BS.fromString "" }
+  assertEqual { actual: BS.fromString "a" <> BS.fromString "", expected: BS.fromString "a" }
+  assertEqual { actual: BS.fromString "" <> BS.fromString "a", expected: BS.fromString "a" }
+  assertEqual { actual: s <> BS.fromString "a", expected: BS.fromString "🅐𝚕𝗂c̤𝘦 ｗä̤𝒔 𝒷ɘg̤̈⒤𝔫ⓝ𝒊n𝕘a" }
+  assertEqual { actual: BS.fromString "Hello" <> BS.fromString " world!", expected: BS.fromString "Hello world!" }
 
 assertUnconsCodeUnit :: ByteString -> CodeUnit -> Effect Unit
 assertUnconsCodeUnit bs c =
