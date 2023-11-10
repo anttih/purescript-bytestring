@@ -1,6 +1,6 @@
 #!chezscheme
 (library (Bench.Main foreign)
-  (export unconsCodePointImpl readTextFile)
+  (export unconsCodePointImpl readTextFile lengthNative)
   (import (chezscheme)
           (prefix (purs runtime lib) rt:))
 
@@ -24,4 +24,7 @@
                    (list->string (reverse chars))
                    (loop (cons next-char chars)
                          (read-char)))))))))
+
+  (define lengthNative string-length)
+
   )

@@ -18,6 +18,8 @@ foreign import unconsCodePointImpl ::
 
 foreign import readTextFile :: String -> Effect String
 
+foreign import lengthNative :: String -> Int
+
 main :: Effect Unit
 main = do
   input <- readTextFile "./alice.txt"
@@ -26,49 +28,40 @@ main = do
   inputBs <- pure (BS.fromString input)
   inputBsUnicode <- pure (BS.fromString inputUnicode)
 
-  benchNativeString input
-  benchNativeStringUnicode inputUnicode
+  benchNativeStringLength input inputUnicode
 
-  benchCodeUnits inputBs
-  benchCodePoints inputBsUnicode
+  benchCodeUnits inputBs inputBsUnicode
+  benchCodePoints inputBs inputBsUnicode
 
   where
   
-  countNativeString :: String -> Int
-  countNativeString s = go 0 s
-    where
-
-    go count tail' = case runFn3 unconsCodePointImpl tail' Just Nothing of
-      Nothing -> count
-      Just { tail } -> go (count + 1) tail
-
-  size :: ByteString -> Int
-  size s = go 0 s
-    where
-    go count tail' = case BS.unconsCodeUnit tail' of
-      Nothing -> count
-      Just { tail } -> go (count + 1) tail
-
-  benchNativeString :: String -> Effect Unit
-  benchNativeString input = do
+  benchNativeStringLength :: String -> String -> Effect Unit
+  benchNativeStringLength ascii unicode = do
     log "---"
-    log "uncons native string codepoint with ascii input" 
-    benchWith 100 \_ -> countNativeString input
+    log "native string-length ascii" 
+    benchWith 100 \_ -> lengthNative ascii
 
-  benchNativeStringUnicode :: String -> Effect Unit
-  benchNativeStringUnicode input = do
     log "---"
-    log "uncons native string codepoint with unicode input" 
-    benchWith 100 \_ -> countNativeString input
+    log "native string-length unicode" 
+    benchWith 100 \_ -> lengthNative unicode
 
-  benchCodeUnits :: ByteString -> Effect Unit
-  benchCodeUnits input = do
+  benchCodeUnits :: ByteString -> ByteString -> Effect Unit
+  benchCodeUnits ascii unicode = do
     log "---"
-    log "uncons ByteString code unit"
-    benchWith 100 \_ -> size input
+    log "ByteString length (code units) ascii"
+    benchWith 100 \_ -> BS.length ascii
 
-  benchCodePoints :: ByteString -> Effect Unit
-  benchCodePoints input = do
     log "---"
-    log "uncons ByteString code point"
-    benchWith 100 \_ -> BS.length input
+    log "ByteString length (code units) unicode"
+    benchWith 100 \_ -> BS.length unicode
+
+  benchCodePoints :: ByteString -> ByteString -> Effect Unit
+  benchCodePoints ascii unicode = do
+    log "---"
+    log "ByteString length (code points) ascii"
+    benchWith 100 \_ -> BS.lengthCodePoints ascii
+
+    log "---"
+    log "ByteString length (code points) unicode"
+    benchWith 100 \_ -> BS.lengthCodePoints unicode
+
