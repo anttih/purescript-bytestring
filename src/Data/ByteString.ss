@@ -187,11 +187,15 @@
           (reverse ls)
           (loop t (cons (integer->char h) ls))))))
 
-  (define (bytestring->number bs radix)
-    (string->number (bytestring->string bs) radix))
+  (define bytestring->number
+    (case-lambda
+      [(bs) (string->number (bytestring->string bs))]
+      [(bs radix) (string->number (bytestring->string bs) radix)]))
 
-  (define (number->bytestring n radix)
-    (string->bytestring (number->string n radix)))
+  (define number->bytestring
+    (case-lambda
+      [(n) (string->bytestring (number->string n))]
+      [(n radix) (string->bytestring (number->string n radix))]))
 
   (define (bytestring->symbol bs)
     (string->symbol (bytestring->string bs)))
