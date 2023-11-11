@@ -9,9 +9,11 @@
           bytestring?
           bytestring=?
           substring
+          bytestring
           bytestring-append
           bytestring->list
           bytestring->number
+          bytestring->symbol
 
           (rename (bytestring-length length))
           (rename (string->bytestring fromString))
@@ -72,6 +74,11 @@
     (let ([bv (string->utf8 s)])
       (make-bytestring bv 0 (bytevector-length bv))))
 
+  (define (bytestring->string bs)
+    (let ([buf (make-bytevector (bytestring-length bs))])
+      (bytevector-copy! (bytestring-buffer bs) (bytestring-offset bs) buf 0 (bytestring-length bs))
+      (utf8->string buf)))
+
   (define (bytestring-read-byte bs)
     (bytevector-s8-ref (bytestring-buffer bs) (bytestring-offset bs)))
 
@@ -80,11 +87,6 @@
       (bytestring-buffer bs)
       (fx+ (bytestring-offset bs) n)
       (fx- (bytestring-length bs) n)))
-
-  (define (bytestring->string bs)
-    (let ([buf (make-bytevector (bytestring-length bs))])
-      (bytevector-copy! (bytestring-buffer bs) (bytestring-offset bs) buf 0 (bytestring-length bs))
-      (utf8->string buf)))
 
   (define (bytestring-uncons-code-unit bs)
     (if (bytestring-empty? bs)
@@ -184,10 +186,14 @@
           (reverse ls)
           (loop t (cons (integer->char h) ls))))))
 
-  ;; compatibility with `string->number`
   (define (bytestring->number bs radix)
     (string->number (bytestring->string bs) radix))
 
+  (define (bytestring->symbol bs)
+    (string->symbol (bytestring->string bs)))
+
+  (define (bytestring . chars)
+    (string->bytestring (apply string chars)))
 
   ;; ------------------------------------------------------------ 
   ;; PureScript FFI
