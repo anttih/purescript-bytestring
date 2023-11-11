@@ -15,6 +15,8 @@
           number->bytestring
           bytestring->symbol
           string->bytestring
+          bytestring-foldcase
+          bytestring-ci=?
 
           (rename (bytestring-length length))
           (rename (string->bytestring fromString))
@@ -202,6 +204,14 @@
 
   (define (bytestring . chars)
     (string->bytestring (apply string chars)))
+
+  ;; TODO add a proper implementation
+  (define (bytestring-foldcase bs)
+    (string->bytestring (string-foldcase (bytestring->string bs))))
+
+  ;; TODO add a proper implementation
+  (define (bytestring-ci=? x y)
+    (string-ci=? (bytestring->string x) (bytestring->string y)))
 
   ;; ------------------------------------------------------------ 
   ;; PureScript FFI
