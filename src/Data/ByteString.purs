@@ -1,6 +1,5 @@
 module Data.ByteString
   ( ByteString
-  , CodeUnit(..)
   , CodePoint(..)
   , unconsCodeUnit
   , unconsCodePoint
@@ -23,12 +22,6 @@ newtype CodePoint = CodePoint Int
 
 derive newtype instance eqCodePoint :: Eq CodePoint
 derive newtype instance showCodePoint :: Show CodePoint
-
--- A UTF-8 code unit. This would be our new `Char`.
-newtype CodeUnit = CodeUnit Int
-
-derive newtype instance eqCodeUnit :: Eq CodeUnit
-derive newtype instance showCodeUnit :: Show CodeUnit
 
 foreign import data ByteString :: Type
 
@@ -74,10 +67,10 @@ foreign import unconsCodeUnitImpl
   :: Fn3
        ByteString
        (forall a. a -> Maybe a)
-       (Maybe { head :: CodeUnit, tail :: ByteString })
-       (Maybe { head :: CodeUnit, tail :: ByteString })
+       (Maybe { head :: Char, tail :: ByteString })
+       (Maybe { head :: Char, tail :: ByteString })
 
-unconsCodeUnit :: ByteString -> Maybe { head :: CodeUnit, tail :: ByteString }
+unconsCodeUnit :: ByteString -> Maybe { head :: Char, tail :: ByteString }
 unconsCodeUnit bs = runFn3 unconsCodeUnitImpl bs Just Nothing
 
 foreign import unconsCodePointImpl

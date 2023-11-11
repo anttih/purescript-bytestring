@@ -2,7 +2,7 @@ module Test.Main where
 
 import Prelude
 
-import Data.ByteString (ByteString, CodeUnit(..), CodePoint(..))
+import Data.ByteString (ByteString, CodePoint(..))
 import Data.ByteString as BS
 import Data.Maybe (Maybe(..))
 import Data.List (List(..), (:))
@@ -16,8 +16,8 @@ main = do
 
   log "unconsCodeUnit"
   assertUnconsCodeUnitFail (BS.fromString "")
-  assertUnconsCodeUnit (BS.fromString "foo") (CodeUnit 102)
-  assertUnconsCodeUnit (BS.fromString "a") (CodeUnit 97)
+  assertUnconsCodeUnit (BS.fromString "foo") 'f'
+  assertUnconsCodeUnit (BS.fromString "a") 'a'
 
   log "unconsCodePoint"
   assertUnconsCodePointFail (BS.fromString "")
@@ -76,7 +76,7 @@ main = do
     , expected: [CodePoint 102, CodePoint 111, CodePoint 111]
     }
 
-assertUnconsCodeUnit :: ByteString -> CodeUnit -> Effect Unit
+assertUnconsCodeUnit :: ByteString -> Char -> Effect Unit
 assertUnconsCodeUnit bs c =
   case BS.unconsCodeUnit bs of
     Nothing -> assert false

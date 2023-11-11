@@ -151,14 +151,16 @@
           head
           (loop (fx1+ i) tail)))))
 
+  ;; Coerce a UTF-8 code unit to a scheme char
+  (define (s8->char c)
+    (if (and (fx>= c 0) (fx<= c 127))
+        (integer->char c)
+        (integer->char 65533)))
+
   ;; Constant-time ref, like string->ref.
   ;; Returns a scheme `char`.
   (define (bytestring-ref bs n)
-    (let ([unit (bytestring-ref-code-unit bs n)])
-      ;; coerce the code unit to a char
-      (if (and (fx>= unit 0) (fx<= unit 127))
-        (integer->char unit)
-        (integer->char 65533))))
+    (s8->char (bytestring-ref-code-unit bs n)))
 
   (define (substring bs start end)
     (make-bytestring
@@ -201,7 +203,7 @@
         Nothing
         (let* ([head (bytestring-read-byte bs)]
                [tail (bytestring-forward bs 1)])
-          (Just (rt:make-object (cons "head" head) (cons "tail" tail)))))))
+          (Just (rt:make-object (cons "head" (s8->char head)) (cons "tail" tail)))))))
 
   (define unconsCodePointImpl
     (lambda (bs Just Nothing)
