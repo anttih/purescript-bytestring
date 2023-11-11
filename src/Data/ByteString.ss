@@ -5,7 +5,6 @@
           bytestring-ref-code-unit
           bytestring-length
           (rename (make-bytestring-of-length make-bytestring))
-          string->bytestring
           bytestring?
           bytestring=?
           substring
@@ -13,7 +12,9 @@
           bytestring-append
           bytestring->list
           bytestring->number
+          number->bytestring
           bytestring->symbol
+          string->bytestring
 
           (rename (bytestring-length length))
           (rename (string->bytestring fromString))
@@ -188,6 +189,9 @@
 
   (define (bytestring->number bs radix)
     (string->number (bytestring->string bs) radix))
+
+  (define (number->bytestring n radix)
+    (string->bytestring (number->string n radix)))
 
   (define (bytestring->symbol bs)
     (string->symbol (bytestring->string bs)))
