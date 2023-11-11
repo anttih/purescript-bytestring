@@ -4,6 +4,7 @@
           bytestring-ref-code-point
           bytestring-ref-code-unit
           bytestring-length
+          (rename (make-bytestring-of-length make-bytestring))
           string->bytestring
           bytestring?
           bytestring=?
@@ -34,6 +35,10 @@
 
   (define (bytestring-empty? bs)
     (fx=? (bytestring-length bs) 0))
+
+  ;; this is our version of `make-string`
+  (define (make-bytestring-of-length n)
+    (make-bytestring (make-bytevector n) 0 n))
 
   ;; Assumes the buffers have the same length
   (define (bytestring-equal-code-units? x y)
