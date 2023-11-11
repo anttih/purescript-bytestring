@@ -11,6 +11,7 @@
           substring
           bytestring-append
           bytestring->list
+          bytestring->number
 
           (rename (bytestring-length length))
           (rename (string->bytestring fromString))
@@ -180,6 +181,11 @@
         (if (not h)
           (reverse ls)
           (loop t (cons (integer->char h) ls))))))
+
+  ;; compatibility with `string->number`
+  (define (bytestring->number bs radix)
+    (string->number (bytestring->string bs) radix))
+
 
   ;; ------------------------------------------------------------ 
   ;; PureScript FFI
