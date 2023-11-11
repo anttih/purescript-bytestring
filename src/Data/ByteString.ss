@@ -10,17 +10,21 @@
           bytestring=?
           substring
           bytestring-append
+          bytestring->list
 
           (rename (bytestring-length length))
           (rename (string->bytestring fromString))
           (rename (bytestring=? eqImpl))
           (rename (bytestring-append concatImpl))
+          toCodePointList
+          toCodePointArray
           unconsCodeUnitImpl
           unconsCodePointImpl
           showByteString
           codePointAtImpl
           sliceImpl)
   (import (except (chezscheme) substring)
+          (prefix (purs runtime srfi :214) srfi:214:)
           (prefix (purs runtime lib) rt:))
 
   ;; Immutable UTF-8 encoded slice into a bytevector buffer
@@ -146,6 +150,8 @@
           head
           (loop (fx1+ i) tail)))))
 
+  ;; Constant-time ref, like string->ref.
+  ;; Returns a scheme `char`.
   (define (bytestring-ref bs n)
     (let ([unit (bytestring-ref-code-unit bs n)])
       ;; coerce the code unit to a char
@@ -166,6 +172,14 @@
       (bytevector-copy! (bytestring-buffer y) (bytestring-offset y) buf (bytestring-length x) (bytestring-length y))
       (make-bytestring buf 0 len)))
 
+  ;; linear-time, returns a list of `char`s
+  (define (bytestring->list bs)
+    (let loop ([tail bs]
+               [ls '()])
+      (let-values ([(h t) (bytestring-uncons-code-point tail)])
+        (if (not h)
+          (reverse ls)
+          (loop t (cons (integer->char h) ls))))))
 
   ;; ------------------------------------------------------------ 
   ;; PureScript FFI
@@ -208,5 +222,16 @@
         (fx+ (bytestring-offset bs) start)
         (fx- end start))))
       
+  (define (toCodePointList bs)
+    (let loop ([tail bs]
+               [ls '()])
+      (let-values ([(h t) (bytestring-uncons-code-point tail)])
+        (if (not h)
+          (reverse ls)
+          (loop t (cons h ls))))))
+
+  (define (toCodePointArray bs)
+    (srfi:214:list->flexvector (toCodePointList bs)))
+
   )
 

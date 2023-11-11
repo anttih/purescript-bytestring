@@ -3,12 +3,14 @@ package:
   dependencies:
     - functions
     - prelude
+    - lists
   test:
     main: Test.Main
     dependencies:
       - assert
       - console
       - minibench
+      - lists
 workspace:
   backend:
     cmd: purescm

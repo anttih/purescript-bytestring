@@ -5,6 +5,7 @@ import Prelude
 import Data.ByteString (ByteString, CodeUnit(..), CodePoint(..))
 import Data.ByteString as BS
 import Data.Maybe (Maybe(..))
+import Data.List (List(..), (:))
 import Effect (Effect)
 import Effect.Console (log)
 import Test.Assert (assert, assertEqual)
@@ -62,6 +63,18 @@ main = do
   assertEqual { actual: BS.fromString "" <> BS.fromString "a", expected: BS.fromString "a" }
   assertEqual { actual: s <> BS.fromString "a", expected: BS.fromString "🅐𝚕𝗂c̤𝘦 ｗä̤𝒔 𝒷ɘg̤̈⒤𝔫ⓝ𝒊n𝕘a" }
   assertEqual { actual: BS.fromString "Hello" <> BS.fromString " world!", expected: BS.fromString "Hello world!" }
+
+  log "toCodePointList"
+  assertEqual
+    { actual: BS.toCodePointList (BS.fromString "foo")
+    , expected: CodePoint 102 : CodePoint 111 : CodePoint 111 : Nil
+    }
+
+  log "toCodePointArray"
+  assertEqual
+    { actual: BS.toCodePointArray (BS.fromString "foo")
+    , expected: [CodePoint 102, CodePoint 111, CodePoint 111]
+    }
 
 assertUnconsCodeUnit :: ByteString -> CodeUnit -> Effect Unit
 assertUnconsCodeUnit bs c =

@@ -9,11 +9,14 @@ module Data.ByteString
   , slice
   , lengthCodePoints
   , codePointAt
+  , toCodePointList
+  , toCodePointArray
   ) where
 
 import Prelude
 
 import Data.Function.Uncurried (Fn2, Fn3, Fn4, runFn2, runFn3, runFn4)
+import Data.List (List)
 import Data.Maybe (Maybe(..))
 
 newtype CodePoint = CodePoint Int
@@ -59,6 +62,10 @@ foreign import eqImpl :: Fn2 ByteString ByteString Boolean
 foreign import sliceImpl :: Fn3 Int Int ByteString ByteString
 
 foreign import concatImpl :: Fn2 ByteString ByteString ByteString
+
+foreign import toCodePointList :: ByteString -> List CodePoint
+
+foreign import toCodePointArray :: ByteString -> Array CodePoint
 
 slice :: Int -> Int -> ByteString -> ByteString
 slice start end bs = runFn3 sliceImpl start end bs
